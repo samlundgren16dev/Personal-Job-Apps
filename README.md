@@ -4,10 +4,13 @@ A simple desktop GUI app that helps you keep track of jobs you've applied to. It
 
 ## Features
 
-- Add job applications by URL (job title, company, and location are auto-parsed).
 - View and manage your job application list in a table.
-- Edit any job entry manually.
-- Delete selected entries.
+- Add job applications by URL (job title, company, and location are auto-parsed).
+- Edit any job entry manually with the `Edit Selected Job` button.
+- Sort on any keyword or string, and rows that do not contain that search data will be filtered out, and will be filtered back in once you clear the search.
+- Double click on any row, and a detailed window view containing the data for that row will open, along with a hyperlink to the job posting, allowing easy access to past job listings you've applied to.
+- By pressing on any of the column headers, the rows will sort alphabetically by that column header's data.
+- Delete selected entries(either with the `del` key, or the built in button).
 - Excel file (`job_applications.xlsx`) saves all data for future use.
 
 ![App Showcase:](showcase/ExampleAppPic.png)
