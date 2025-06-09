@@ -6,5 +6,5 @@ BUTTON_BG = "#3498db"
 BUTTON_FG = "#ffffff"
 
 # Excel configuration
-EXCEL_FILE = "excel/job_applications.xlsx"
+EXCEL_FILE = "job_applications.xlsx"
 HEADERS = ["Date Applied", "Job Title", "Company", "Location", "Job/Req #", "Link"]
