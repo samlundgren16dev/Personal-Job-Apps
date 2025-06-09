@@ -11,7 +11,7 @@ from selenium.webdriver.common.by import By
 import time
 
 EXCEL_FILE = "job_applications.xlsx"
-HEADERS = ["Date Applied", "Job Title", "Company", "Location", "Link"]
+HEADERS = ["Date Applied", "Job Title", "Company", "Location", "Job/Req #", "Link"]
 
 def init_excel():
     if not os.path.exists(EXCEL_FILE):
@@ -23,7 +23,7 @@ def init_excel():
 
 def parse_job_info(url):
     options = Options()
-    options.add_argument("--headless")  # run in background
+    options.add_argument("--headless")
     options.add_argument("--disable-gpu")
     options.add_argument("--no-sandbox")
 
@@ -50,10 +50,23 @@ def parse_job_info(url):
             if location:
                 break
 
+        # Try finding a job/req number (heuristic match for strings like "Req #" or IDs)
+        job_req = "Unknown"
+        try:
+            elems = driver.find_elements(By.XPATH, "//*[contains(text(), 'Job Num') or contains(text(), 'Job Req') or contains(text(), 'Req') or contains(text(), 'Job ID') or contains(text(), 'Requisition')]")
+            for elem in elems:
+                text = elem.text.strip()
+                if len(text) > 3:
+                    job_req = text
+                    break
+        except:
+            pass
+
         return {
             "Job Title": job_title,
             "Company": company,
-            "Location": location
+            "Location": location,
+            "Job/Req #": job_req
         }
 
     except Exception as e:
@@ -69,7 +82,14 @@ def add_job(url, tree):
 
     today = datetime.today().strftime('%Y-%m-%d')
 
-    row_data = [today, info["Job Title"], info["Company"], info["Location"], url]
+    row_data = [
+        today,
+        info["Job Title"],
+        info["Company"],
+        info["Location"],
+        info["Job/Req #"],
+        url
+    ]
 
     wb = openpyxl.load_workbook(EXCEL_FILE)
     ws = wb.active
@@ -91,18 +111,23 @@ def remove_selected(tree):
         messagebox.showwarning("No Selection", "Please select a row to remove.")
         return
 
+    # Get selected row's values
     values = tree.item(selected[0], 'values')
+    link_to_remove = values[-1]  # The Link column is the last one
 
+    # Remove from Treeview
     tree.delete(selected[0])
 
-    # Remove from Excel
+    # Remove from Excel based on Link column
     wb = openpyxl.load_workbook(EXCEL_FILE)
     ws = wb.active
+
     for row in ws.iter_rows(min_row=2):
-        row_values = [cell.value for cell in row]
-        if row_values == list(values):
+        cell_value = str(row[HEADERS.index("Link")].value).strip()
+        if cell_value == link_to_remove:
             ws.delete_rows(row[0].row)
             break
+
     wb.save(EXCEL_FILE)
 
 def edit_selected(tree):
@@ -127,10 +152,8 @@ def edit_selected(tree):
 
         tree.item(item_id, values=new_values)
 
-        # Update Excel
         wb = openpyxl.load_workbook(EXCEL_FILE)
         ws = wb.active
-
         for row in ws.iter_rows(min_row=2):
             row_values = [cell.value if cell.value is not None else "" for cell in row]
             if row_values == [v if v is not None else "" for v in values]:
@@ -155,7 +178,7 @@ def main():
 
     root = tk.Tk()
     root.title("Job Tracker")
-    root.geometry("1000x500")
+    root.geometry("1100x500")
 
     frame_top = tk.Frame(root)
     frame_top.pack(pady=10)
@@ -177,7 +200,7 @@ def main():
     tree = ttk.Treeview(root, columns=HEADERS, show='headings')
     for col in HEADERS:
         tree.heading(col, text=col)
-        tree.column(col, anchor=tk.W, width=200 if col != "Date Applied" else 100)
+        tree.column(col, anchor=tk.W, width=200 if col not in ("Date Applied", "Job/Req #") else 120)
     tree.pack(expand=True, fill=tk.BOTH, padx=10, pady=10)
 
     remove_btn = tk.Button(root, text="Remove Selected Job", command=lambda: remove_selected(tree))
