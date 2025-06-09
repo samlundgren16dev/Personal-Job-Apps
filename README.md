@@ -12,6 +12,8 @@ A simple desktop GUI app that helps you keep track of jobs you've applied to. It
 
 ![App Showcase:](showcase/ExampleAppPic.png)
 
+The parsing is not perfect, you may need to edit a few of the fields to be correct. It is quite hard to get it right every time, due to how some job postings have their data setup.
+
 ## Requirements
 
 - Python 3.7+
@@ -42,5 +44,9 @@ python job_tracker.py
 
 ## Files
 
-- `job_tracker.py` – Main application code.
+- `main.py` – Main application code.
+- `constants.py` - Holds all the constants used throughout this project.
+- `excel_handler.py` - Handles all of the excel logic.
+- `gui.py` - Handles all of the gui logic.
+- `job_parser.py` - Handles all the data parsing.
 - `job_applications.xlsx` – Automatically created Excel file storing job data.
