@@ -38,7 +38,7 @@ You also need [**ChromeDriver**](https://sites.google.com/chromium.org/driver/) 
 Run the app:
 
 ```bash
-python job_tracker.py
+python main.py
 ```
 
 ### Notes:
