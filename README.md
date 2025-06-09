@@ -10,6 +10,8 @@ A simple desktop GUI app that helps you keep track of jobs you've applied to. It
 - Delete selected entries.
 - Excel file (`job_applications.xlsx`) saves all data for future use.
 
+![App Showcase:]("C:\Users\samlu\Downloads\ExampleAppPic.png")
+
 ## Requirements
 
 - Python 3.7+
