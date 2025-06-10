@@ -24,6 +24,8 @@ def main():
     poll()
 
     def on_close():
+        sys.stdout = sys.__stdout__
+        sys.stderr = sys.__stderr__
         root.destroy()
 
     root.protocol("WM_DELETE_WINDOW", on_close)

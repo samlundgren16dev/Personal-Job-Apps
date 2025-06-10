@@ -13,7 +13,7 @@ A simple desktop GUI app that helps you keep track of jobs you've applied to. It
 - Delete selected entries(either with the `del` key, or the built in button).
 - Excel file (`job_applications.xlsx`) saves all data for future use.
 
-![App Showcase:](showcase/ExampleAppPic.png)
+![App Showcase:](showcase/AppFeatures.png)
 
 The parsing is not perfect, you may need to edit a few of the fields to be correct. It is quite hard to get it right every time, due to how some job postings have their data setup.
 

@@ -2,15 +2,29 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 import tkinter.font as tkFont
 import webbrowser
+import sys
 from datetime import datetime
 from constants import *
 from excel_handler import *
 from job_parser import parse_job_info
 
+class StreamRedirector:
+    def __init__(self, write_callback):
+        self.write_callback = write_callback
+
+    def write(self, message):
+        if message.strip():
+            self.write_callback(message)
+
+    def flush(self):
+        pass
+
 class JobTrackerGUI:
     def __init__(self, root):
         self.root = root
         self.setup_gui()
+        sys.stdout = StreamRedirector(self.print_to_terminal)
+        sys.stderr = StreamRedirector(self.print_to_terminal)
         self.last_deleted_row = None
         self.last_edited_row = None
         self.last_edited_item_id = None
@@ -42,8 +56,78 @@ class JobTrackerGUI:
         self.create_treeview_frame()
         self.create_control_buttons_frame()
         self.create_info_frame()
-
+        self.create_terminal_frame()
         self.refresh_treeview()
+
+    def create_terminal_frame(self):
+        terminal_frame = tk.Frame(self.root, bg=PRIMARY_BG)
+        terminal_frame.pack(fill=tk.BOTH, expand=False, padx=10, pady=(0, 10))
+
+        # Terminal text widget
+        self.terminal_text = tk.Text(
+            terminal_frame,
+            height=12,  # increased height from 8 to 12
+            bg="#111111",
+            fg="#39FF14",
+            insertbackground="white",
+            font=("Courier", 10),
+            state='disabled',
+            wrap='word'
+        )
+        self.terminal_text.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+
+        scrollbar = ttk.Scrollbar(terminal_frame, command=self.terminal_text.yview)
+        scrollbar.pack(side=tk.LEFT, fill=tk.Y)
+        self.terminal_text['yscrollcommand'] = scrollbar.set
+
+        # Buttons frame next to terminal
+        btn_frame = tk.Frame(terminal_frame, bg=PRIMARY_BG)
+        btn_frame.pack(side=tk.LEFT, fill=tk.Y, padx=(10, 0))
+
+        clear_btn = tk.Button(
+            btn_frame,
+            text="Clear Terminal",
+            bg=BUTTON_BG,
+            fg=BUTTON_FG,
+            font=('Arial', 10, 'bold'),
+            width=15,
+            command=self.clear_terminal
+        )
+        clear_btn.pack(pady=(0, 5))
+
+        copy_btn = tk.Button(
+            btn_frame,
+            text="Copy Terminal",
+            bg=BUTTON_BG,
+            fg=BUTTON_FG,
+            font=('Arial', 10, 'bold'),
+            width=15,
+            command=self.copy_terminal
+        )
+        copy_btn.pack(pady=(0, 5))
+
+    def clear_terminal(self):
+        self.terminal_text.config(state='normal')
+        self.terminal_text.delete('1.0', tk.END)
+        self.terminal_text.config(state='disabled')
+
+    def copy_terminal(self):
+        # Copy all terminal text to clipboard
+        self.root.clipboard_clear()
+        terminal_content = self.terminal_text.get('1.0', tk.END)
+        self.root.clipboard_append(terminal_content)
+        print("Terminal content copied to clipboard")
+
+    def print_to_terminal(self, message):
+        if not hasattr(self, 'terminal_text'):
+            return
+        try:
+            self.terminal_text.config(state='normal')
+            self.terminal_text.insert(tk.END, f"{message}\n")
+            self.terminal_text.see(tk.END)
+            self.terminal_text.config(state='disabled')
+        except tk.TclError:
+            pass
 
     def create_url_entry_frame(self):
         frame_top = tk.Frame(self.root, bg=SECONDARY_BG)
@@ -211,6 +295,7 @@ class JobTrackerGUI:
         self.tree.insert('', tk.END, values=row_data)
         self.url_entry.delete(0, tk.END)
         self.refresh_treeview()
+        self.print_to_terminal("Successfully added new job row")
 
     def refresh_treeview(self, filter_text=None):
         for item in self.tree.get_children():
@@ -236,10 +321,11 @@ class JobTrackerGUI:
 
         found = delete_from_excel(values)
         if not found:
-            print("Full row not found in Excel for deletion.")
+            self.print_to_terminal("Full row not found in Excel for deletion.")
 
         self.undo_btn.config(state='normal')
         self.confirm_btn.config(state='normal')
+        print("Row successfully deleted")
 
     def undo_delete(self):
         if not self.last_deleted_row:
@@ -252,11 +338,13 @@ class JobTrackerGUI:
         self.last_deleted_row = None
         self.undo_btn.config(state='disabled')
         self.confirm_btn.config(state='disabled')
+        print("Deletion successfully reverted")
 
     def confirm_deletion(self):
         self.last_deleted_row = None
         self.undo_btn.config(state='disabled')
         self.confirm_btn.config(state='disabled')
+        print("Entry successfully deleted")
 
     def show_row_details(self):
         selected = self.tree.selection()
@@ -398,18 +486,22 @@ class JobTrackerGUI:
         self.last_edited_item_id = None
         self.undo_edit_btn.config(state='disabled')
         self.confirm_edit_btn.config(state='disabled')
+        print("Edit successfully undone")
 
     def confirm_edit(self):
         self.last_edited_row = None
         self.last_edited_item_id = None
+        print("Edit successfully confirmed")
         self.undo_edit_btn.config(state='disabled')
         self.confirm_edit_btn.config(state='disabled')
 
     def do_search(self, event=None):
         query = self.search_var.get().strip()
         if query == "":
+            print("No search query data")
             self.refresh_treeview()
         else:
+            print("Search performed successfully")
             self.refresh_treeview(query)
 
     def clear_search(self):
