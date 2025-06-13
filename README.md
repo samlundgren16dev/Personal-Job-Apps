@@ -27,7 +27,7 @@ This application solves the common problem of managing multiple job applications
 ### **Enhanced User Experience**
 - **Professional Menu System** - File, Edit, View, and Help menus with full functionality
 - **Comprehensive Keyboard Shortcuts** - Fast navigation with industry-standard shortcuts
-- **Interactive Statistics Dashboard** - Visual analytics of your job search progress
+- **Interactive Statistics Dashboard** - Visual analytics accessible via prominent button or Ctrl+T
 - **Real-time Progress Indicators** - Visual feedback during web scraping operations
 - **Cancellable Operations** - Stop parsing anytime with dedicated stop button or Escape key
 - **Enhanced Terminal Output** - Detailed logging with color-coded status messages
@@ -51,7 +51,6 @@ The application interface showcases a professional job tracking experience:
 - **Statistics View**: Visual analytics of your application progress
 - **Search & Filter**: Powerful tools to find specific applications quickly
 
-> **Note**: The app comes with sample data pre-loaded to demonstrate all features. Use `python scripts/create_test_data.py` to generate fresh test data for screenshots.
 
 ## Quick Start
 
@@ -111,6 +110,7 @@ tkinter               # GUI framework (included with Python)
 | `Ctrl+E` | Edit selected job |
 | `Ctrl+F` | Search/filter |
 | `Ctrl+S` | Manual save |
+| `Ctrl+T` | Show statistics |
 | `Ctrl+X` | Export to CSV |
 | `F5` | Refresh view |
 | `Delete` | Remove selected |
@@ -322,25 +322,6 @@ python -m pytest tests/ -v
 python main.py
 ```
 
-### **Project Structure**
-```
-src/job_tracker/
-├── core/           # Business logic and data handling
-│   ├── excel_handler.py    # Excel operations with caching
-│   ├── parser.py          # Web scraping engine
-│   └── constants.py       # Configuration and constants
-├── gui/            # User interface components
-│   └── main_window.py     # Primary GUI implementation
-└── utils/          # Utility functions and helpers
-```
-
-### **Contributing Guidelines**
-- Follow PEP 8 style guidelines
-- Maintain test coverage above 80%
-- Update documentation for new features
-- Use semantic commit messages
-- Test on multiple platforms before submitting PRs
-
 ## Deployment & Distribution
 
 ### **Creating Standalone Executable**
@@ -378,10 +359,6 @@ COPY . .
 # Run application
 CMD ["python", "main.py"]
 ```
-
-## License & Support
-
-This project is open source and available under the MIT License. For support, feature requests, or bug reports, please open an issue on GitHub.
 
 ---
 

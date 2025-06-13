@@ -143,7 +143,8 @@ class JobTrackerGUI:
         # View menu
         view_menu = tk.Menu(menubar, tearoff=0)
         menubar.add_cascade(label="View", menu=view_menu)
-        view_menu.add_command(label="Show Statistics", command=self.show_statistics)
+        view_menu.add_command(label="Show Statistics", command=self.show_statistics,
+                             accelerator="Ctrl+T")
         view_menu.add_command(label="Clear Terminal", command=self.clear_terminal)
 
         # Help menu
@@ -161,6 +162,7 @@ class JobTrackerGUI:
         self.root.bind("<Control-s>", lambda e: self.save_data())
         self.root.bind("<F5>", lambda e: self.refresh_treeview())
         self.root.bind("<Control-x>", lambda e: self.export_data())
+        self.root.bind("<Control-t>", lambda e: self.show_statistics())
         self.root.bind("<Escape>", lambda e: self.stop_parsing() if self.is_parsing else None)
 
     def focus_search(self):
@@ -281,6 +283,7 @@ class JobTrackerGUI:
         Ctrl+F          Search
         Ctrl+S          Save Data
         Ctrl+X          Export Data
+        Ctrl+T          Show Statistics
         F5              Refresh View
         Delete          Remove Selected Job
         Enter           Add Job (in URL field)
@@ -353,6 +356,10 @@ class JobTrackerGUI:
                  font=('Arial', 9), command=self.do_search).pack(side=tk.LEFT, padx=2)
         tk.Button(search_btn_frame, text="Clear", bg=BUTTON_BG, fg=BUTTON_FG,
                  font=('Arial', 9), command=self.clear_search).pack(side=tk.LEFT, padx=2)
+
+        # Add Statistics button with distinctive styling
+        tk.Button(search_btn_frame, text="📊 Statistics", bg="#9b59b6", fg="white",
+                 font=('Arial', 9, 'bold'), command=self.show_statistics).pack(side=tk.LEFT, padx=2)
 
     def create_treeview_frame(self):
         tree_frame = tk.Frame(self.root, bg=PRIMARY_BG)
