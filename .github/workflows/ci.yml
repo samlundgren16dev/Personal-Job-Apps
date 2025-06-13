@@ -1,0 +1,193 @@
+# GitHub Actions CI/CD Pipeline for Job Application Tracker
+# This pipeline includes linting, testing, security checks, and build stages
+
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+env:
+  PYTHON_VERSION: "3.9"
+
+jobs:
+  # Lint Stage - Code Quality Checks
+  lint-pylint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pylint
+
+      - name: Run PyLint
+        run: |
+          echo "Running PyLint on main modules..."
+          pylint src/ --disable=missing-docstring,too-few-public-methods --fail-under=8.0
+
+  lint-flake8:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install flake8
+
+      - name: Run Flake8
+        run: |
+          echo "Running Flake8 style checks..."
+          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=100 --statistics
+
+  # Test Stage - Unit Tests
+  test-unit:
+    runs-on: ubuntu-latest
+    needs: [lint-pylint]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -r requirements-dev.txt
+
+      - name: Run unit tests
+        run: |
+          echo "Running unit tests..."
+          python -m pytest tests/ -v --tb=short --cov=. --cov-report=term --cov-report=xml
+
+      - name: Upload coverage reports
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-report
+          path: coverage.xml
+          retention-days: 7
+
+  # Security Stage - Security Analysis
+  security-bandit:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install bandit
+
+      - name: Run Bandit security analysis
+        run: |
+          echo "Running security analysis with Bandit..."
+          bandit -r . -f json -o bandit-report.json || true
+          bandit -r . -f txt
+
+      - name: Upload Bandit report
+        uses: actions/upload-artifact@v3
+        with:
+          name: bandit-report
+          path: bandit-report.json
+          retention-days: 7
+
+  security-safety:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install safety
+
+      - name: Run Safety check
+        run: |
+          echo "Checking for known security vulnerabilities..."
+          safety check --json --output safety-report.json || true
+          safety check
+
+      - name: Upload Safety report
+        uses: actions/upload-artifact@v3
+        with:
+          name: safety-report
+          path: safety-report.json
+          retention-days: 7
+
+  # Build Stage - Application Package
+  build-package:
+    runs-on: ubuntu-latest
+    needs: [test-unit]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Create application package
+        run: |
+          echo "Creating application package..."
+          mkdir -p dist/
+          cp -r src/ dist/
+          cp requirements.txt dist/
+          cp README.md dist/
+          cd dist/
+          python -m zipfile -c ../job-tracker-app.zip .
+          cd ..
+          echo "Package created successfully"
+          ls -la job-tracker-app.zip
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: job-tracker-app
+          path: job-tracker-app.zip
+          retention-days: 30

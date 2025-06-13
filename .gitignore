@@ -1,4 +1,53 @@
 job_applications.xlsx
-working.py
-__pycache__
-config
+dev
+data
+.cursor
+__pycache__/
+.Python
+build/
+dist/
+downloads/
+
+# Virtual environments
+venv/
+env/
+ENV/
+.env
+.venv/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project specific
+config/
+backups/
+logs/
+temp/
+
+# Test artifacts
+.coverage
+htmlcov/
+.pytest_cache/
+coverage.xml
+.tox/
+.coverage.*
+
+# CI/CD artifacts
+*.log
+bandit-report.json
+safety-report.json
+
+# Documentation builds
+docs/_build/
+docs/.doctrees/
+
+# PyInstaller builds
+*.spec
