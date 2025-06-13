@@ -41,7 +41,7 @@ This application solves the common problem of managing multiple job applications
 -  **Data validation** and error recovery
 -  **Configuration management** with persistent settings
 
-![App Showcase](assets/images/ExampleTable.png)
+![App Showcase](assets/images/CorrectPic.png)
 
 ## Screenshots
 
